@@ -30,6 +30,7 @@ const linkSharedCallback = async ({
         entities: [
           {
             entity_type: 'slack#/entities/file',
+            app_unfurl_url: link.url,
             entity_payload: {
               attributes: {
                 url: link.url,
