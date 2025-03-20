@@ -49,7 +49,6 @@ const linkSharedCallback = async ({
                   type: 'string'
                 },
                 preview: {
-                  type: 'image',
                   alt_text: 'Miro Board image',
                   image_url: response.data.picture.imageUrl
                 }
