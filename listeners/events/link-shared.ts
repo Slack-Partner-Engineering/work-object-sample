@@ -26,7 +26,7 @@ const linkSharedCallback = async ({
         }
       });
 
-      const encodedMetadata = urlEncodeMetadata({
+      const metadata = {
         entities: [
           {
             entity_type: 'slack#/entities/file',
@@ -38,10 +38,8 @@ const linkSharedCallback = async ({
                 title: {
                   text: response.data.name,
                 },
-                header_key: "Miro File",
-                subtitle: {
-                  text: response.data.type,
-                }
+                display_type: "Miro File",
+                product_name: `Miro ${response.data.type}`
               },
               fields: {
                 created_by: {
@@ -51,24 +49,45 @@ const linkSharedCallback = async ({
                 preview: {
                   alt_text: 'Miro Board image',
                   image_url: response.data.picture.imageUrl
+                },
+                last_modified_by: {
+                  value: response.data.modifiedBy.name,
+                  type: 'string'
+                },
+                date_created: {
+                  value: convertDateTimeToTimestamp(response.data.createdAt),
+                },
+                date_updated: {
+                  value: convertDateTimeToTimestamp(response.data.modifiedAt),
+                },
+                file_size: {
+                  value: "NA"
+                },
+                mime_type: {
+                  value: "Miro"
                 }
-              }
+              },
+              display_order: ["created_by", "last_modified_by", "date_created", "date_updated", "file_size", "mime_type", "preview"]
             }
           }
         ]
-      });
+      };
 
       await client.chat.unfurl({
           channel: event.channel,
           ts: event.message_ts,
           unfurls: {},
-          metadata: encodedMetadata
+          metadata: metadata
         });
     }
   } catch (error) {
     logger.error(error);
   }
 };
+
+function convertDateTimeToTimestamp(time: string): string {
+  return new Date(time).getTime() / 1000;
+}
 
 function extractMiroBoardId(url: string): string | null {
   const regex = /miro\.com\/app\/board\/(\w+=?)\//;
