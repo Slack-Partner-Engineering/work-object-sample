@@ -1,36 +1,30 @@
 {
-  "name": "bolt-ts-starter-template",
+  "name": "workObjectsDemoApp",
   "version": "1.0.0",
-  "description": "A scaffold template for Slack apps",
-  "main": "dist/app.js",
+  "description": "",
+  "main": "app.js",
   "scripts": {
     "build": "tsc",
-    "start": "npm run build && node ./dist/app.js",
-    "lint": "npx @biomejs/biome check *.ts listeners",
-    "lint:fix": "npx @biomejs/biome check --write *.ts listeners",
-    "test": "npm run build && npm run lint"
+    "start": "node dist/server.js",
+    "push": "tsc && git add . && git commit -m \"auto push\" && git push && heroku logs --tail"
   },
-  "author": "Slack Technologies, LLC",
-  "license": "MIT",
-  "keywords": [
-    "slack",
-    "bolt",
-    "slackapi",
-    "typescript"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/slack-samples/bolt-ts-starter-template.git"
-  },
-  "bugs": {
-    "url": "https://github.com/slack-samples/bolt-ts-starter-template/issues"
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/body-parser": "^1.19.5",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.11",
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@slack/bolt": "^4.2.1",
-    "dotenv": "~16.4.7"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "typescript": "^5.8.2"
+    "@slack/web-api": "^7.0.4",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
+    "eslint": "^8.57.0",
+    "express": "^4.19.2"
   }
 }

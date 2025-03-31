@@ -1,15 +1,9 @@
-import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
-
-const appHomeOpenedCallback = async ({
-  client,
-  event,
-  logger,
-}: AllMiddlewareArgs & SlackEventMiddlewareArgs<'app_home_opened'>) => {
+export const app_home_opened = async (type, event, res, slackClient,) => {
   // Ignore the `app_home_opened` event for anything but the Home tab
   if (event.tab !== 'home') return;
 
   try {
-    await client.views.publish({
+    await slackClient.views.publish({
       user_id: event.user,
       view: {
         type: 'home',
@@ -32,8 +26,7 @@ const appHomeOpenedCallback = async ({
       },
     });
   } catch (error) {
-    logger.error(error);
+    console.log(error);
   }
 };
 
-export default appHomeOpenedCallback;
