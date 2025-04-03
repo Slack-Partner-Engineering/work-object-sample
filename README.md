@@ -4,6 +4,8 @@ This sample app generates Work Object unfurls when a Miro Board URL is posted in
 
 To learn more about implementing Work Objects in your Slack app, visit the [Work Object documentation page]().
 
+![image](https://github.com/user-attachments/assets/fc742a19-29ad-43bc-a854-c0ac583a7b60)
+
 ## Installation
 
 Before getting started, make sure you have a development workspace where you have permissions to install apps. If you don’t have one setup, go ahead and [create one](https://slack.com/create).
