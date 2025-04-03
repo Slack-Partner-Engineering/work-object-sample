@@ -4,8 +4,6 @@ import { convert_datetime_to_timestamp } from '../utils/time'
 
 export const entity_details_requested = async (type, event, res, slackClient,) => {
   try {
-    console.log(event)
-
     const miroBoard = await get_miro_board(event.object_id);
 
     const metadata = {
@@ -50,14 +48,12 @@ export const entity_details_requested = async (type, event, res, slackClient,) =
       }
     };
 
-    console.log(JSON.stringify(metadata))
-    const response = await axios.post(
+    await axios.post(
       'https://slack.com/api/entity.presentDetails',
       {
         user: event.user,
         source_id: event.object_id,
         user_auth_required: false,
-        user_auth_url: 'https://miro.com/login/',
         metadata: metadata
       },
       {
@@ -67,13 +63,7 @@ export const entity_details_requested = async (type, event, res, slackClient,) =
         },
       }
     );
-
-    console.log(response.data)
   } catch (error) {
     console.error(error);
   }
 };
-
-function urlEncodeMetadata(metadata: object) : string {
-  return encodeURIComponent(JSON.stringify(metadata));
-}

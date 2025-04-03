@@ -1,10 +1,10 @@
 {
     "display_information": {
-        "name": "Work Objects Demo App"
+        "name": "Work Objects Sample App"
     },
     "features": {
         "bot_user": {
-            "display_name": "Work Objects Demo App",
+            "display_name": "Work Objects Sample App",
             "always_online": false
         },
         "unfurl_domains": [
@@ -21,7 +21,7 @@
     },
     "settings": {
         "event_subscriptions": {
-            "request_url": "https://da72-165-225-212-248.ngrok-free.app/slack/events",
+            "request_url": "https://[YOUR_NGROK_DOMAIN_HERE]/slack/events",
             "bot_events": [
                 "entity_details_requested",
                 "link_shared"

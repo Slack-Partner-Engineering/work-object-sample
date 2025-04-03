@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const MIRO_API_BASE_URL = "https://api.miro.com/v1";
 
+// https://developers.miro.com/reference/get-specific-board
 export const get_miro_board = async (boardId) => {
   const getMiroBoardUrl = `${MIRO_API_BASE_URL}/boards/${boardId}`;
 
