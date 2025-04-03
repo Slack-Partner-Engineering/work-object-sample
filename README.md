@@ -1,10 +1,12 @@
-# Bolt for JavaScript (TypeScript) Template App
+# Work Objects Sample App
 
-This is a generic Bolt for JavaScript (TypeScript) template app used to build out Slack apps.
+This sample app generates Work Object unfurls when a Miro Board URL is posted in a Slack channel. Additionally, it provides data for the Work Objects flexpane when a user clicks an unfurl.
 
-Before getting started, make sure you have a development workspace where you have permissions to install apps. If you don’t have one setup, go ahead and [create one](https://slack.com/create).
+To learn more about implementing Work Objects in your Slack app, visit the [Work Object documentation page]().
 
 ## Installation
+
+Before getting started, make sure you have a development workspace where you have permissions to install apps. If you don’t have one setup, go ahead and [create one](https://slack.com/create).
 
 #### Create a Slack App
 
@@ -20,13 +22,20 @@ Before you can run the app, you'll need to store some environment variables.
 
 1. Copy `env.sample` to `.env`
 2. Open your apps configuration page from [this list](https://api.slack.com/apps), click _OAuth & Permissions_ in the left hand menu, then copy the _Bot User OAuth Token_ into your `.env` file under `SLACK_BOT_TOKEN`
-3. Click _Basic Information_ from the left hand menu and follow the steps in the _App-Level Tokens_ section to create an app-level token with the `connections:write` scope. Copy that token into your `.env` as `SLACK_APP_TOKEN`.
+
+Steps to setup Miro
+1. Create a Miro app by following the steps listed [here](https://developers.miro.com/docs/task-3-run-your-first-app-in-miro)
+2. Install the app on Miro and copy the OAuth token that you receive to the `MIRO_TOKEN` variable in `.env`
 
 #### Install Dependencies
 
 `npm install`
 
-#### Run Bolt Server
+#### Build Project
+
+`npm run-script build`
+
+#### Run Project
 
 `npm start`
 
@@ -36,19 +45,16 @@ Before you can run the app, you'll need to store some environment variables.
 
 `manifest.json` is a configuration for Slack apps. With a manifest, you can create an app with a pre-defined configuration, or adjust the configuration of an existing app.
 
-### `app.ts`
+### `server.ts`
 
-`app.ts` is the entry point for the application and is the file you'll run to start the server. This project aims to keep this file as thin as possible, primarily using it as a way to route inbound requests.
+`server.ts` is the entry point for the application and the setup of the Slack Client.
 
-### `/listeners`
+### `/events`
 
-Every incoming request is routed to a "listener". Inside this directory, we group each listener based on the Slack Platform feature used, so `/listeners/shortcuts` handles incoming [Shortcuts](https://api.slack.com/interactivity/shortcuts) requests, `/listeners/views` handles [View submissions](https://api.slack.com/reference/interaction-payloads/views#view_submission) and so on.
+Every incoming request is sent to `event-handler.ts`, which routes every incoming request to the appropriate event handler.
 
 ## App Distribution / OAuth
-
-Only implement OAuth if you plan to distribute your application across multiple workspaces. A separate `app-oauth.ts` file can be found with relevant OAuth settings.
-
-When using OAuth, Slack requires a public URL where it can send requests. In this template app, we've used [`ngrok`](https://ngrok.com/download). Checkout [this guide](https://ngrok.com/docs#getting-started-expose) for setting it up.
+Slack requires a public URL where it can send requests. In this template app, we've used [`ngrok`](https://ngrok.com/download). Checkout [this guide](https://ngrok.com/docs#getting-started-expose) for setting it up.
 
 Start `ngrok` to access the app on an external network and create a redirect URL for OAuth.
 
