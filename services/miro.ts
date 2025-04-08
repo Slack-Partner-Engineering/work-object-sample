@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const MIRO_API_BASE_URL = "https://api.miro.com/v1";
+const MIRO_API_BASE_URL = "https://api.miro.com/v2";
 
 // https://developers.miro.com/reference/get-specific-board
 export const get_miro_board = async (boardId) => {
@@ -13,10 +13,10 @@ export const get_miro_board = async (boardId) => {
         Accept: 'application/json',
       },
     });
-
+    
     return response.data;
   } catch (error) {
-    console.error('Error fetching Miro board:', error);
+    console.error('Error fetching Miro board:', error.response);
     throw error;
   }
 };

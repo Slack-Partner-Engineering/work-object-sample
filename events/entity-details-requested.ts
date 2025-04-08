@@ -1,17 +1,17 @@
-import axios from 'axios';
 import { get_miro_board } from '../services/miro'
 import { convert_datetime_to_timestamp } from '../utils/time'
+import { postEntityPresentDetails } from '../services/slack'
 
-export const entity_details_requested = async (type, event, res, slackClient,) => {
+export const entity_details_requested = async (type, event, res, slackClient) => {
   try {
-    const miroBoard = await get_miro_board(event.object_id);
+    const miroBoard = await get_miro_board(event.external_ref.id);
 
     const metadata = {
       entity_type: 'slack#/entities/file',
       entity_payload: {
         attributes: {
           url: event.link,
-          unique_identifier: event.object_id,
+          external_ref: event.external_ref,
           title: {
             text: miroBoard.name,
           },
@@ -25,7 +25,7 @@ export const entity_details_requested = async (type, event, res, slackClient,) =
           },
           preview: {
             alt_text: 'Miro Board image',
-            image_url: miroBoard.picture.imageUrl
+            image_url: miroBoard.picture.imageURL
           },
           last_modified_by: {
             value: miroBoard.modifiedBy.name,
@@ -44,26 +44,24 @@ export const entity_details_requested = async (type, event, res, slackClient,) =
             value: "Miro"
           }
         },
-        display_order: ["created_by", "last_modified_by", "date_created", "date_updated", "file_size", "mime_type", "preview"]
+        display_order: ["preview", "created_by", "last_modified_by", "date_created", "date_updated", "file_size", "mime_type"]
       }
     };
 
-    await axios.post(
-      'https://slack.com/api/entity.presentDetails',
-      {
-        user: event.user,
-        source_id: event.object_id,
-        user_auth_required: false,
-        metadata: metadata
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${process.env.SLACK_BOT_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    // (optional) if auth is implemented for flexpane, then verify if user is authed
+    const verifyUserIsAuthed = validateUserAuth(event.user);
+    if (verifyUserIsAuthed) { // if authenticated, proceed as usual
+      await postEntityPresentDetails(event.trigger_id, metadata, false)
+    } else { // else, send notify users that they must authenticated in order to view flexpane
+      await postEntityPresentDetails(event.trigger_id, metadata, true)
+    }
+
   } catch (error) {
-    console.error(error);
+    console.error("Error handling entity_details_requested:\n", error);
   }
 };
+
+function validateUserAuth(user_id) : boolean {
+  // your logic here to validate if user is authenticated
+  return true;
+}

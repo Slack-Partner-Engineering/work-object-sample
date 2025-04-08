@@ -18,7 +18,9 @@ export const link_shared = async (type, event, res, slackClient) => {
             entity_payload: {
               attributes: {
                 url: link.url,
-                unique_identifier: boardId,
+                external_ref: {
+                  id: boardId
+                },
                 title: {
                   text: miroBoard.name,
                 },
@@ -28,7 +30,7 @@ export const link_shared = async (type, event, res, slackClient) => {
               fields: {
                 preview: {
                   alt_text: 'Miro Board image',
-                  image_url: miroBoard.picture.imageUrl
+                  image_url: miroBoard.picture.imageURL
                 },
               },
               custom_fields: [ 
@@ -55,6 +57,6 @@ export const link_shared = async (type, event, res, slackClient) => {
       console.log(`No board ID detected. Do not unfurl. URL: ${link.url}`)
     }
   } catch (error) {
-    console.error(error);
+    console.error("Error handling link_shared:\n", error);
   }
 };
