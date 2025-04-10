@@ -9,6 +9,7 @@ To learn more about implementing Work Objects in your Slack app, visit the [Work
 
 ### GitHub Task Work Object
 
+![task_example](https://github.com/user-attachments/assets/116a6020-5593-400b-bff6-d0d1d41bb9c9)
 
 ## Installation & Setup
 
