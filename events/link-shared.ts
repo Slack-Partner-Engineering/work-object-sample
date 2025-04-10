@@ -1,62 +1,136 @@
 import { get_miro_board } from '../services/miro'
-import { extract_miro_board_id } from '../utils/miro'
+import { get_github_issue } from '../services/github'
+import { is_miro_url, extract_miro_board_id_from_url } from '../utils/miro'
+import { is_github_url, extract_github_issue_id_from_url, extract_github_owner_from_url, extract_github_repo_from_url } from '../utils/github'
+import { convert_datetime_to_timestamp } from '../utils/time'
 
-export const link_shared = async (type, event, res, slackClient) => {
+export const link_shared = async (event, slackClient) => {
   try {
     const link = event.links[0]; // only unfurl the first link shared
-    const boardId = extract_miro_board_id(link.url);
+    let metadata;
 
-    if (boardId) {
-      const miroBoard = await get_miro_board(boardId);
+    if (is_github_url(link.url)) {
+      // only unfurls URLs that belong to a GitHub Cloud Issue e.g. http://github.com/org-name/repo-name/issues/123/
+      const issueId = extract_github_issue_id_from_url(link.url);
 
-      // create a Work Object unfurl for a File entity type
-      const metadata = {
-        entities: [
-          {
-            app_unfurl_url: link.url,
-            entity_type: 'slack#/entities/file',
-            entity_payload: {
-              attributes: {
-                url: link.url,
-                external_ref: {
-                  id: boardId
-                },
-                title: {
-                  text: miroBoard.name,
-                },
-                display_type: `Miro ${miroBoard.type}`,
-                product_name: "Miro"
-              },
-              fields: {
-                preview: {
-                  alt_text: 'Miro Board image',
-                  image_url: miroBoard.picture.imageURL
-                },
-              },
-              custom_fields: [ 
-                {
-                    key: "starred", 
-                    label: "Starred",
-                    value: "Yes",
-                    type: "string"
-                }
-              ],
-              display_order: ["starred", "preview"]
-            },
-          }
-        ]
-      };
+      if (issueId) {
+        const owner = extract_github_owner_from_url(link.url);
+        const repo = extract_github_repo_from_url(link.url);
 
-      await slackClient.chat.unfurl({
-          channel: event.channel,
-          ts: event.message_ts,
-          unfurls: {}, // send your existing unfurl here
-          metadata: metadata
-        });
+        const issue = await get_github_issue(owner, repo, issueId);
+        metadata = createGitHubIssueTaskEntityUnfurl(link, owner, repo, issue);
+
+      } else {
+        console.log(`GitHub URL is not an Issue. Cannot unfurl URL: ${link.url}`);
+      }
+
+    } else if (is_miro_url(link.url)) {
+      // only unfurls URLs that belong to a miro board e.g. https://miro.com/app/board/XYZ=/
+      const boardId = extract_miro_board_id_from_url(link.url);
+
+      if (boardId) {
+        const board = await get_miro_board(boardId);
+        metadata = createMiroBoardFileEntityUnfurl(link, board);
+
+      } else {
+        console.log(`Miro URL is not a board. Cannot unfurl URL: ${link.url}`);
+      }
+
     } else {
-      console.log(`No board ID detected. Do not unfurl. URL: ${link.url}`)
-    }
+      throw(`URL cannot be unfurled: ${link.url}`);
+    }  
+
+    await slackClient.chat.unfurl({
+        channel: event.channel,
+        ts: event.message_ts,
+        unfurls: {}, // send your existing unfurl here
+        metadata: metadata
+      });
   } catch (error) {
     console.error("Error handling link_shared:\n", error);
   }
 };
+
+function createMiroBoardFileEntityUnfurl(link, board) {
+  return {
+    entities: [
+      {
+        app_unfurl_url: link.url,
+        entity_type: 'slack#/entities/file',
+        entity_payload: {
+          attributes: {
+            url: link.url,
+            external_ref: {
+              id: `miro_board_${board.id}`
+            },
+            title: {
+              text: board.name,
+            },
+            display_type: `Miro ${board.type}`,
+            product_name: "Miro"
+          },
+          fields: {
+            preview: {
+              alt_text: 'Miro Board image',
+              image_url: board.picture.imageURL
+            },
+          },
+          custom_fields: [ 
+            {
+                key: "starred", 
+                label: "Starred",
+                value: "Yes",
+                type: "string"
+            }
+          ],
+          display_order: ["starred", "preview"]
+        },
+      }
+    ]
+  };
+}
+
+function createGitHubIssueTaskEntityUnfurl(link, owner, repo, issue) {
+  return {
+    entities: [
+      {
+        app_unfurl_url: link.url,
+        entity_type: 'slack#/entities/task',
+        entity_payload: {
+          attributes: {
+            url: link.url,
+            external_ref: {
+              id: `github_issue_${owner}_${repo}_${issue.number}`
+            },
+            title: {
+              text: issue.title,
+            },
+            display_type: `Issue`,
+            product_name: "GitHub"
+          },
+          fields: {
+            date_created: {
+              value: convert_datetime_to_timestamp(issue.created_at)
+            },
+            assignee: {
+              value: issue.assignee ? issue.assignee.login : "None",
+              type: "string" 
+            },
+            status: {
+              value: issue.state
+            },
+          },
+          custom_fields: [ 
+            {
+                key: "milestone", 
+                label: "Milestone",
+                value: issue.milestone ? issue.milestone.title : "None",
+                type: "string"
+            }
+          ],
+          display_order: ["status", "assignee", "milestone", "date_created"]
+        },
+      }
+    ]
+  };
+}

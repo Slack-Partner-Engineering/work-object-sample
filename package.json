@@ -21,7 +21,8 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@slack/web-api": "^7.0.4",
+    "@slack/types": "^2.15.0-featWorkObjectsBeta.2",
+    "@slack/web-api": "^7.10.1-featWorkObjectsBeta.1",
     "body-parser": "^1.20.2",
     "dotenv": "^16.4.5",
     "eslint": "^8.57.0",

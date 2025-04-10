@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
-import { WebClient } from "@slack/web-api";
 import dotenv from "dotenv";
+import { WebClient } from "@slack/web-api";
 import { event_handler } from "./events/event-handler";
 import { url_verify } from "./events/url-verify";
 

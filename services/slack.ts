@@ -7,7 +7,7 @@ export const postEntityPresentDetails = async (
   trigger_id,
   metadata,
   user_auth_required = undefined,
-  user_unfurl_url = undefined,
+  user_auth_url = undefined,
   error = undefined
 ) => {
   const entityPresentDetailsURL = `${SLACK_API_BASE_URL}/entity.presentDetails`;
@@ -19,7 +19,7 @@ export const postEntityPresentDetails = async (
         trigger_id: trigger_id,
         metadata: metadata,
         ...(user_auth_required !== undefined && { user_auth_required }),
-        ...(user_unfurl_url !== undefined && { user_unfurl_url }),
+        ...(user_auth_url !== undefined && { user_auth_url }),
         ...(error !== undefined && { error })
       },
       {

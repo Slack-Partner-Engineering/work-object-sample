@@ -8,7 +8,8 @@
             "always_online": false
         },
         "unfurl_domains": [
-            "miro.com"
+            "miro.com",
+            "github.com"
         ]
     },
     "oauth_config": {

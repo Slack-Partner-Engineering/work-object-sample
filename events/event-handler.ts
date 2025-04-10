@@ -6,9 +6,9 @@ export const event_handler = async (type, event, res, slackClient) => {
   res.status(200).send("Event received");
 
   if (event.type === "link_shared") {
-    link_shared(type, event, res, slackClient);
+    link_shared(event, slackClient);
   } else if (event.type === "entity_details_requested") {
-    entity_details_requested(type, event, res, slackClient);
+    entity_details_requested(event, slackClient);
   } else {
     console.log(`Event not supported: ${event.type}`)
   }
