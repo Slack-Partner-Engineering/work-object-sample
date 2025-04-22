@@ -7,7 +7,6 @@ export const  is_github_url = (url: string): boolean => {
 // parses the GitHub issue ID from a GitHub URL
 export const  extract_github_issue_id_from_url = (url: string): string | null => {
   const match = url.match(/^https?:\/\/(?:www\.)?github\.com\/([\w.-]+)\/([\w.-]+)\/issues\/(\d+)$/);
-  console.log(match)
   return match ? match[3] : null;
 };
 
