@@ -24,37 +24,50 @@ export const entity_details_requested = async (event, slackClient) => {
       metadata = createMiroBoardFileEntityFlexpane(event, board);
 
     } else {
-      throw("Cannot recognize external reference id");
+      throw("Unrecognized external reference id");
     }
 
-    // (optional) if auth is implemented for flexpane, then verify if user is authed
+    // (optional) if authenticated is necessary to view flexpane content, then verify if user is authenticated
     const userIsAuthenticated = validateUserAuth(event.user);
 
     if (userIsAuthenticated) {
+      // (optional) user is authenticated, but let's verify if they have access to the resource
+      const userHasAccess = validateUserAccess(event.user);
+
+      if (!userHasAccess) {
+        // denies access to flexpane with restricted error (i.e. 403 error code)
+        const error = {
+          status: "restricted"
+        }
+
+        // (optional) set your own custom error message
+        // const error = {
+        //   status: "custom",
+        //   custom_message: "User does not have access to the repository"
+        // }
+
+        await slackClient.entity.presentDetails({
+          trigger_id: event.trigger_id,
+          metadata: undefined,
+          error: error
+        });
+      }
+
+      // user is authenticated and has access to the resource
+      // display flexpane
       await slackClient.entity.presentDetails({
         trigger_id: event.trigger_id,
         metadata: metadata
       });
-
-      // await postEntityPresentDetails(event.trigger_id, metadata) // if you prefer to make the API request without the client
     } else {
-      // notify users that they must authenticated in order to view flexpane
-      const user_auth_url = 'https://miro.com/login/' // put your OAuth authentication url here
-      const error = {
-        status: "custom",
-        custom_message: "User must login"
-      }
-
-      // denies access to flexpane with error message
+      // deny access to flexpane because user is not authenticated
+      const user_auth_url = 'https://github.com/login' // put your OAuth authentication url here
       await slackClient.entity.presentDetails({
         trigger_id: event.trigger_id,
-        metadata: metadata,
+        metadata: undefined,
         user_auth_required: true,
-        user_auth_url: user_auth_url,
-        error: error
+        user_auth_url: user_auth_url
       });
-
-      // await postEntityPresentDetails(event.trigger_id, undefined, true, user_auth_url, error) // if you prefer to make the API request without the client
     }
 
   } catch (error) {
@@ -64,6 +77,13 @@ export const entity_details_requested = async (event, slackClient) => {
 
 function validateUserAuth(user_id) : boolean {
   // your logic here to validate if user is authenticated
+  // returns true if user is authenticated
+  return true;
+}
+
+function validateUserAccess(user_id): boolean {
+  // your logic here to validate if user has access to the resource
+  // returns true if user has access
   return true;
 }
 
