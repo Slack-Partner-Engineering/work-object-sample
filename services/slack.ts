@@ -3,7 +3,7 @@ import axios from 'axios';
 const SLACK_API_BASE_URL = "https://slack.com/api";
 
 // https://api.slack.com/methods/entity.presentDetails
-export const postEntityPresentDetails = async (
+export const post_entity_present_details = async (
   trigger_id,
   metadata,
   user_auth_required = undefined,

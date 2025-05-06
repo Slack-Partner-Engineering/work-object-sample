@@ -1,30 +1,31 @@
 import { get_miro_board } from '../services/miro'
 import { get_github_issue } from '../services/github'
+import { post_entity_present_details } from '../services/slack'
 import { convert_datetime_to_timestamp } from '../utils/time'
-import { postEntityPresentDetails } from '../services/slack'
+import { extract_github_owner_from_url, extract_github_repo_from_url } from '../utils/github'
+
 
 export const entity_details_requested = async (event, slackClient) => {
   try {
-    const externalRefId = event.external_ref.id; // we set this external reference ID previously in `link_shared.ts`
     let metadata;
+    const link = event.link;
 
-    if (externalRefId.startsWith('github_issue')) {
-      const idParts = externalRefId.split('_') // ID is formatted as `github_issue_{owner}_{repo}_{issue.number}`
-      const owner = idParts[2];
-      const repo = idParts[3];
-      const issueId = idParts[4];
+    if (link.domain === "github.com") {
+      const owner = extract_github_owner_from_url(link.url);
+      const repo = extract_github_repo_from_url(link.url);
+      const issueId = event.external_ref.id // we set this external reference ID previously in `link_shared.ts`
 
       const issue = await get_github_issue(owner, repo, issueId);
       metadata = createGitHubIssueTaskEntityFlexpane(event, issue);
 
-    } else if (externalRefId.startsWith('miro_board')) {
-      const boardId = externalRefId.split('_')[2]; // ID is formatted as `miro_board_{board.id}`
+    } else if (link.domain === "miro.com") {
+      const boardId = event.external_ref.id // we set this external reference ID previously in `link_shared.ts`
 
       const board = await get_miro_board(boardId);
       metadata = createMiroBoardFileEntityFlexpane(event, board);
 
     } else {
-      throw("Unrecognized external reference id");
+      throw("Unrecognized Work Object unfurl");
     }
 
     // (optional) if authenticated is necessary to view flexpane content, then verify if user is authenticated
@@ -59,6 +60,8 @@ export const entity_details_requested = async (event, slackClient) => {
         trigger_id: event.trigger_id,
         metadata: metadata
       });
+
+      // post_entity_present_details(event.trigger_id, metadata) // direct API call
     } else {
       // deny access to flexpane because user is not authenticated
       const user_auth_url = 'https://github.com/login' // put your OAuth authentication url here

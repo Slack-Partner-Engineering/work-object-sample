@@ -61,7 +61,7 @@ function createMiroBoardFileEntityUnfurl(link, board) {
           attributes: {
             url: link.url,
             external_ref: {
-              id: `miro_board_${board.id}`
+              id: `${board.id}`
             },
             title: {
               text: board.name,
@@ -100,7 +100,7 @@ function createGitHubIssueTaskEntityUnfurl(link, owner, repo, issue) {
           attributes: {
             url: link.url,
             external_ref: {
-              id: `github_issue_${owner}_${repo}_${issue.number}`
+              id: `${issue.number}`
             },
             title: {
               text: issue.title,
