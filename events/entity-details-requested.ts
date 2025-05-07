@@ -4,7 +4,6 @@ import { post_entity_present_details } from '../services/slack'
 import { convert_datetime_to_timestamp } from '../utils/time'
 import { extract_github_owner_from_url, extract_github_repo_from_url } from '../utils/github'
 
-
 export const entity_details_requested = async (event, slackClient) => {
   try {
     let metadata;
@@ -49,7 +48,6 @@ export const entity_details_requested = async (event, slackClient) => {
 
         await slackClient.entity.presentDetails({
           trigger_id: event.trigger_id,
-          metadata: undefined,
           error: error
         });
       }
@@ -67,7 +65,6 @@ export const entity_details_requested = async (event, slackClient) => {
       const user_auth_url = 'https://github.com/login' // put your OAuth authentication url here
       await slackClient.entity.presentDetails({
         trigger_id: event.trigger_id,
-        metadata: undefined,
         user_auth_required: true,
         user_auth_url: user_auth_url
       });
