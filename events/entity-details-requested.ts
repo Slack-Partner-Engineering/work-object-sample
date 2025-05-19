@@ -1,5 +1,7 @@
 import { get_miro_board } from '../services/miro'
 import { get_github_issue } from '../services/github'
+import { get_pagerduty_incident } from '../services/pagerduty'
+import { get_notion_page } from '../services/notion'
 import { post_entity_present_details } from '../services/slack'
 import { convert_datetime_to_timestamp } from '../utils/time'
 import { extract_github_owner_from_url, extract_github_repo_from_url } from '../utils/github'
@@ -9,7 +11,7 @@ export const entity_details_requested = async (event, slackClient) => {
     let metadata;
     const link = event.link;
 
-    if (link.domain === "github.com") {
+    if (link.domain.includes("github.com")) {
       const owner = extract_github_owner_from_url(link.url);
       const repo = extract_github_repo_from_url(link.url);
       const issueId = event.external_ref.id // we set this external reference ID previously in `link_shared.ts`
@@ -17,14 +19,27 @@ export const entity_details_requested = async (event, slackClient) => {
       const issue = await get_github_issue(owner, repo, issueId);
       metadata = createGitHubIssueTaskEntityFlexpane(event, issue);
 
-    } else if (link.domain === "miro.com") {
+    } else if (link.domain.includes("miro.com")) {
       const boardId = event.external_ref.id // we set this external reference ID previously in `link_shared.ts`
 
       const board = await get_miro_board(boardId);
       metadata = createMiroBoardFileEntityFlexpane(event, board);
 
+    } else if (link.domain.includes("pagerduty.com")) {
+      const incidentId = event.external_ref.id // we set this external reference ID previously in `link_shared.ts`
+
+      const incident = await get_pagerduty_incident(incidentId);
+      metadata = createPagerDutyIncidentEntityFlexpane(event, incident.incident);
+
+    } else if (link.domain.includes("notion.so")) {
+      const pageId = event.external_ref.id // we set this external reference ID previously in `link_shared.ts`
+
+      const page = await get_notion_page(pageId);
+      metadata = createNotionContentItemEntityFlexpane(event, page);
+      console.log(metadata)
+      console.log(metadata.entity_payload)
     } else {
-      throw("Unrecognized Work Object unfurl");
+      throw(`Unrecognized Work Object unfurl:\n ${event}`);
     }
 
     // (optional) if authenticated is necessary to view flexpane content, then verify if user is authenticated
@@ -179,3 +194,100 @@ function createGitHubIssueTaskEntityFlexpane(event, issue) {
     },
   }
 };
+
+function createPagerDutyIncidentEntityFlexpane(event, incident) {
+  return {
+    entity_type: 'slack#/entities/incident',
+    entity_payload: {
+      attributes: {
+        url: event.link.url,
+        external_ref: event.external_ref,
+        title: {
+          text: incident.summary,
+        },
+        display_type: `Incident`,
+        product_name: "PagerDuty"
+      },
+      fields: {
+        created_by: {
+          value: "U06H37B22MQ", // add a valid Slack user ID here
+          type: "slack#/types/user_id" 
+        },
+        assigned_to: {
+          value: incident.assignments[0].assignee.summary ? incident.assignments[0].assignee.summary : "None", // takes the first user
+          type: "string"
+        },
+        date_created: {
+          value: convert_datetime_to_timestamp(incident.created_at)
+        },
+        date_updated: {
+          value: convert_datetime_to_timestamp(incident.updated_at)
+        },
+        description: {
+          value: incident.summary,
+          type: "string"
+        },
+        status: {
+          value: incident.status
+        },
+        severity: {
+          value: incident.urgency
+        },
+        service: {
+          value: incident.service.summary
+        }
+      },
+      custom_fields: [ 
+        {
+          key: "priority", 
+          label: "Priority",
+          value: incident.priority.summary,
+          type: "string"
+        }
+      ],
+      display_order: ["status", "severity", "priority", "description", "service", "assigned_to", "created_by", "date_created", "date_updated"]
+    },
+  }
+};
+
+function createNotionContentItemEntityFlexpane(event, page) {
+  return {
+    entity_type: 'slack#/entities/content_item',
+    entity_payload: {
+      attributes: {
+        url: event.link.url,
+        external_ref: event.external_ref,
+        title: {
+          text: page.properties.title.title[0].text.content,
+        },
+        display_type: `Page`,
+        product_name: "Notion"
+      },
+      fields: {
+        preview: {
+          alt_text: 'Notion Page Preview',
+          image_url: page.cover.external.url
+        },
+        description: {
+          value: "Description of Notion page",
+          format: "markdown"
+        },
+        date_created: {
+          value: convert_datetime_to_timestamp(page.created_time)
+        },
+        date_updated: {
+          value: convert_datetime_to_timestamp(page.last_edited_time)
+        },
+        last_modified_by: {
+          value: "U06H37B22MQ", // add a valid Slack user ID here
+          type: "slack#/types/user_id" 
+        },
+        created_by: {
+          value: "U06H37B22MQ", // add a valid Slack user ID here
+          type: "slack#/types/user_id" 
+        }
+      },
+      display_order: ["preview", "description", "date_created", "date_updated", "last_modified_by", "created_by"]
+    },
+  }
+}

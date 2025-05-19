@@ -9,14 +9,16 @@
         },
         "unfurl_domains": [
             "miro.com",
-            "github.com"
+            "github.com",
+            "pagerduty.com"
         ]
     },
     "oauth_config": {
         "scopes": {
             "bot": [
                 "links:read",
-                "links:write"
+                "links:write",
+                "chat:write"
             ]
         }
     },
